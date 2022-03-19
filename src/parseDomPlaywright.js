@@ -47,11 +47,13 @@ const main = async() => {
     // console.log(`element: ${JSON.stringify(result, null, 2)}`);
 
     fs.writeFileSync("pageDom.json", JSON.stringify(result, null, 2), "utf-8");
-    console.log("Done writing dom structure to file");
+    console.log("COMPLETED: parsedDom to file");
+
     page.on("close", () => {
-        process.exit(1);
+        process.exit(0);
     })
-    
+
+    page.close();    
 }
 
 await main();
