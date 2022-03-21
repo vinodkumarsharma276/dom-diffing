@@ -11,6 +11,8 @@ const parseHTMLAndKeepRelations = () => {
         element["visitedChild"] = false;
         element["id"] = parseInt(i);
         element["parentId"] = -1;
+        element["selector"] = element.tagName.toLowerCase();
+        element["matched"] = false;
     }
 
     for(let j=0; j<allPageElements.length; j++){
@@ -22,6 +24,8 @@ const parseHTMLAndKeepRelations = () => {
             node["tag"] = element.tagName;
             node["id"] = parseInt(element["id"]);
             node["parentId"] = parseInt(element["parentId"]);
+            node["selector"] = element.tagName.toLowerCase() === "html" ? "html" : element["selector"] + " " + element.tagName.toLowerCase();
+            element["selector"] = node["selector"];
 
             if(element.hasAttributes()){
                 const attributes = element.attributes;
@@ -54,6 +58,7 @@ const parseHTMLAndKeepRelations = () => {
             for(let k=0; k<element.childNodes.length; k++){
                 let child = element.childNodes[k];
                 child["parentId"] = element["id"];
+                child["selector"] = element["selector"];
                 // console.log(`setting parent id: ${child}`);
             }
             element["visitedChild"] = true;
@@ -61,28 +66,6 @@ const parseHTMLAndKeepRelations = () => {
     }
 
     return nodes;
-}
-
-const highlightElements = () => {
-    
-}
-
-const generateXPath = (dom) => {
-    console.log(`Generating xPath`);
-    for(let i=0; i<dom.length; i++){
-        let node = dom[i];
-        let tags = [];
-        // console.log(node["parentId"]);
-        if(node["parentId"] !== -1){
-            iterateNodeForParent(dom, i, tags);
-        }else{
-            tags.push(node["tag"]);
-        }
-
-        node["selector"] = (tags.reverse().join(" ")).toLowerCase();
-    }
-    // console.log(`Generated xPath ${dom}`);
-    return dom;
 }
 
 const iterateNodeForParent = (dom, i, tags) => {
@@ -102,18 +85,17 @@ const main = async() => {
     // console.log(`element: ${JSON.stringify(result, null, 2)}`);
     console.log("COMPLETED: parsedDom to file");
 
-    const dom = generateXPath(result);
-    fs.writeFileSync("pageDom.json", JSON.stringify(dom, null, 2), "utf-8");
+    fs.writeFileSync("pageDom.json", JSON.stringify(result, null, 2), "utf-8");
     await page.exposeFunction("highlightElements", highlightElements);
-    await page.evaluate((dom) => {
+    await page.evaluate((result) => {
         // console.log(JSON.stringify(dom));
-        for(let i=0; i<dom.length; i++){
-            const element = document.querySelector(dom[i]["selector"]);
+        for(let i=0; i<result.length; i++){
+            const element = document.querySelector(result[i]["selector"]);
             element.style.setProperty("border-style", "solid");
             element.style.setProperty("border-color", "purple");
             element.style.setProperty("border-width", "2px");
         }        
-    }, dom);
+    }, result);
     // console.log(`dom: ${JSON.stringify(dom)}`);
 
     page.on("close", () => {
