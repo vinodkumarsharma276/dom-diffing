@@ -1,5 +1,6 @@
 import playwright from "playwright";
 import * as fs from "fs";
+import compareDoms from "./domDiffingEngine.js";
 
 const parseHTMLAndKeepRelations = () => {
     let nodes = [];
@@ -12,7 +13,8 @@ const parseHTMLAndKeepRelations = () => {
         element["id"] = parseInt(i);
         element["parentId"] = -1;
         element["selector"] = element.tagName.toLowerCase();
-        element["matched"] = false;
+        element["missing"] = false;
+        element["cssMatched"] = false;
     }
 
     for(let j=0; j<allPageElements.length; j++){
@@ -78,24 +80,41 @@ const iterateNodeForParent = (dom, i, tags) => {
 }
 
 const main = async() => {
+
+    const baseLineURL = "https://www.google.com";
+    const candidateURL = "https://www.google.com";
+
     const browser = await playwright.chromium.launch({headless: false});
     const page = await browser.newPage();
-    await page.goto("https://www.google.com");
-    const result = await page.evaluate(parseHTMLAndKeepRelations);
+
+    //Parse Baseline URL
+    await page.goto(baseLineURL);
+    const baselineParsedDom = await page.evaluate(parseHTMLAndKeepRelations);
     // console.log(`element: ${JSON.stringify(result, null, 2)}`);
     console.log("COMPLETED: parsedDom to file");
 
-    fs.writeFileSync("pageDom.json", JSON.stringify(result, null, 2), "utf-8");
-    await page.exposeFunction("highlightElements", highlightElements);
-    await page.evaluate((result) => {
-        // console.log(JSON.stringify(dom));
-        for(let i=0; i<result.length; i++){
-            const element = document.querySelector(result[i]["selector"]);
-            element.style.setProperty("border-style", "solid");
-            element.style.setProperty("border-color", "purple");
-            element.style.setProperty("border-width", "2px");
-        }        
-    }, result);
+    fs.writeFileSync("pageDomBaseLine.json", JSON.stringify(baselineParsedDom, null, 2), "utf-8");
+
+    //Parse Candidate URL
+    await page.goto(candidateURL);
+    const candidateParsedDom = await page.evaluate(parseHTMLAndKeepRelations);
+    // console.log(`element: ${JSON.stringify(result, null, 2)}`);
+    console.log("COMPLETED: parsedDom to file");
+
+    fs.writeFileSync("pageDomCandidate.json", JSON.stringify(candidateParsedDom, null, 2), "utf-8");
+
+    //Rum domDiffingEngine
+    compareDoms(baselineParsedDom, candidateParsedDom);
+
+    // await page.evaluate((result) => {
+    //     // console.log(JSON.stringify(dom));
+    //     for(let i=0; i<result.length; i++){
+    //         const element = document.querySelector(result[i]["selector"]);
+    //         element.style.setProperty("border-style", "solid");
+    //         element.style.setProperty("border-color", "purple");
+    //         element.style.setProperty("border-width", "2px");
+    //     }        
+    // }, result);
     // console.log(`dom: ${JSON.stringify(dom)}`);
 
     page.on("close", () => {
