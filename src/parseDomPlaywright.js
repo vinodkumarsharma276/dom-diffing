@@ -113,7 +113,7 @@ const parseHTMLAndKeepRelations = () => {
 
     function setParsedDomKeys(node, domElement, name, id, parentId){
         domElement[name]["attributes"] = findElementAttributes(node);
-        // domElement[name]["cssProps"] = findAppliedCSSOnElement(node);
+        domElement[name]["cssProps"] = findAppliedCSSOnElement(node);
         domElement[name]["missing"] = true;
         domElement[name]["userId"] = id;
         domElement[name]["parentId"] = parentId;
@@ -160,14 +160,14 @@ const main = async() => {
     //Parse Baseline URL
     const baseLineParsedDom = await parseWebPage(page, baseLineURL, "baselineParsedDom.json");
 
-    //Parse Candidate URL
-    // const candidateParsedDom = await parseWebPage(page, candidateURL, "candidateParsedDom.json");
-
+    // Parse Candidate URL
+    const candidateParsedDom = await parseWebPage(page, candidateURL, "candidateParsedDom.json");
+    candidateParsedDom["html"]["cssProps"]["accent-color"] = "blue";
     // //Rum domDiffingEngine
-    // const result = compareDoms(baselineParsedDom, candidateParsedDom);
+    const result = compareDoms(baseLineParsedDom, candidateParsedDom);
+    // console.log()
+    fs.writeFileSync("result.json", JSON.stringify(result, null, 2), "utf-8");
 
-    // // console.log(`result: ${JSON.stringify(result, null, 2)}`);
-    // fs.writeFileSync("result.json", JSON.stringify(result, null, 2), "utf-8");
     // await page.evaluate((result) => {
     //     // console.log(JSON.stringify(dom));
     //     for(let i=0; i<dom.length; i++){
@@ -186,7 +186,7 @@ const main = async() => {
         process.exit(0);
     })
 
-    // page.close();    
+    page.close();    
 }
 
 const parseWebPage = async (page, url, filename) => {
