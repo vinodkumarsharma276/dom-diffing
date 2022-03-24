@@ -6,7 +6,6 @@ import compareDoms from "./domDiffingEngine.js";
  *  _parseHTMLAndKeepRelations_TBR will be removed in future. We have changed the logic of parsing DOM.
  *  parseHTMLAndKeepRelations (Without underscore) contains the logic of parsing DOM.
  */
-
 const _parseHTMLAndKeepRelations_TBR = () => {
     let nodes = [];
     const allPageElements = document.querySelectorAll("*");
