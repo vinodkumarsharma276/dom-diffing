@@ -74,12 +74,13 @@ const _parseHTMLAndKeepRelations = () => {
 }
 
 const parseHTMLAndKeepRelations = () => {
+    // console.log("test");
     const pageElements = document.querySelectorAll("*");
     let pageParsedDom = {}
 
     for(const element of pageElements){
         if(!element["visited"]){
-            pageParsedDom = iterateDomElements(element, "", 0, -1, 0);    
+            pageParsedDom = iterateDomElements(element, "", 0, 0, 1);    
         }
     }    
     // console.log(`pageParsedDom = ${JSON.stringify(pageParsedDom, null, 2)}`);
@@ -93,9 +94,10 @@ const parseHTMLAndKeepRelations = () => {
 
         domElement[name] ={
             "nthChild": _nthChild,
+            "cssComparisonResult": {},
             "attributes": {},
             "cssProps": {},
-            "path": (parent + " " + node.tagName.toLowerCase()).trim(),
+            "path": ((parentId == 0 ? "" : parent+">") + node.tagName.toLowerCase()).trim() + ":nth-child(" + _nthChild + ")",
             "childNodes": []
         };
 
@@ -103,8 +105,14 @@ const parseHTMLAndKeepRelations = () => {
         // console.log(`domElement ${JSON.stringify(domElement)}`);
         let nthChild = 0;
         for(const childNode of node.childNodes){
-            if(childNode.tagName && !childNode["visited"]){
-                domElement[name]["childNodes"].push(iterateDomElements(childNode, parent + " " + node.tagName.toLowerCase(), id+1, id, ++nthChild));
+            if(childNode.tagName && !childNode["visited"]){   
+                // console.log(childNode.tagName);
+                if (childNode.tagName.toLowerCase() == "script"){
+                    childNode["visited"] = true;
+                }else{
+                    // console.log(node["nthChild"]);
+                    domElement[name]["childNodes"].push(iterateDomElements(childNode, domElement[name]["path"], id+1, id+1, ++nthChild));
+                }
             }
         }
 
@@ -151,10 +159,10 @@ const parseHTMLAndKeepRelations = () => {
 
 const main = async() => {
 
-    const baseLineURL = "https://www.google.com";
-    const candidateURL = "https://www.google.com";
+    const baseLineURL = "https://victorious-pond-0e5552910.1.azurestaticapps.net/";
+    const candidateURL = " https://ambitious-smoke-0a8712010.1.azurestaticapps.net/";
 
-    const browser = await playwright.chromium.launch({headless: true});
+    const browser = await playwright.chromium.launch({headless: false});
     const page = await browser.newPage();
 
     //Parse Baseline URL
@@ -162,25 +170,15 @@ const main = async() => {
 
     // Parse Candidate URL
     const candidateParsedDom = await parseWebPage(page, candidateURL, "candidateParsedDom.json");
-    candidateParsedDom["html"]["cssProps"]["accent-color"] = "blue";
-    // //Rum domDiffingEngine
-    const result = compareDoms(baseLineParsedDom, candidateParsedDom);
-    // console.log()
-    fs.writeFileSync("result.json", JSON.stringify(result, null, 2), "utf-8");
 
-    // await page.evaluate((result) => {
-    //     // console.log(JSON.stringify(dom));
-    //     for(let i=0; i<dom.length; i++){
-    //         const elements = document.querySelectorAll(result[i]["selector"]);
-    //         for(let j=0; j<elements.length; j++) {
-    //             const element = elements.item(j);
-    //             element.style.setProperty("border-style", "solid");
-    //             element.style.setProperty("border-color", "purple");
-    //             element.style.setProperty("border-width", "2px");
-    //         }
-    //     }        
-    // }, dom);
-    // console.log(`dom: ${JSON.stringify(dom)}`);
+    //Intentionally changing CSS and deleting nodes
+    candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"][0]["nav"]["childNodes"][3]["ul"]["cssProps"]["accent-color"] = "blue";
+    candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"][1]["div"]["cssProps"]["accent-color"] = "blue";
+    candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"][1]["div"]["cssProps"]["align-items"] = "wide";
+    candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"].pop();
+    // candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"].pop();
+    const result = compareDoms(baseLineParsedDom, candidateParsedDom);
+    fs.writeFileSync("result.json", JSON.stringify(result, null, 2), "utf-8");
 
     page.on("close", () => {
         process.exit(0);

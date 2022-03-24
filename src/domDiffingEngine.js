@@ -1,9 +1,7 @@
 const compareDoms = (baseLineDom, candidateDom) => {
-    // console.log("Compairing elements");
+    // console.log("Comparing elements");
     const baseLineTags = Object.keys(baseLineDom);
     const candidateTags = Object.keys(candidateDom);
-    // console.log(`${baseLineDom[baseLineTags[0]]["path"]} ${candidateDom[candidateTags[0]]["path"]}`);
-    // console.log(`${baseLineDom[baseLineTags[0]]["nthChild"]} ${candidateDom[candidateTags[0]]["nthChild"]}`);
     let cssComparisonResult = {};
 
     for(let i=0; i<candidateTags.length; i++){
@@ -12,9 +10,9 @@ const compareDoms = (baseLineDom, candidateDom) => {
             baseLineDom[baseLineTags[i]]["missing"] = false;
 
             cssComparisonResult = compareNodeCSS(baseLineDom[baseLineTags[i]]["cssProps"], candidateDom[candidateTags[i]]["cssProps"]);
-
             baseLineDom[baseLineTags[i]]["cssComparisonResult"] = cssComparisonResult;
-
+            candidateDom[candidateTags[i]]["cssComparisonResult"] = cssComparisonResult;
+            
             const baseLineChildNodes = baseLineDom[baseLineTags[i]]["childNodes"];
             const candidateDomChildNodes = candidateDom[baseLineTags[i]]["childNodes"];
 
