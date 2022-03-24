@@ -2,6 +2,7 @@ import playwright from "playwright";
 import * as fs from "fs";
 
 const parseResultAnsShowDomDiff = async () => {
+    console.log("********   HIGHLIGHTING ELEMENTS WITH DIFFERENCE    ********");
     const domDiffResult =JSON.parse(fs.readFileSync("result.json", "utf-8"));
 
     const baselineResult = domDiffResult[0];

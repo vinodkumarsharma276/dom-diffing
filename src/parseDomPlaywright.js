@@ -81,6 +81,7 @@ const parseHTMLAndKeepRelations = () => {
     // console.log("test");
     const pageElements = document.querySelectorAll("*");
     let pageParsedDom = {}
+    let totalDomElementParsed = 0;
 
     for(const element of pageElements){
         if(!element["visited"]){
@@ -88,10 +89,14 @@ const parseHTMLAndKeepRelations = () => {
         }
     }    
     // console.log(`pageParsedDom = ${JSON.stringify(pageParsedDom, null, 2)}`);
-    return pageParsedDom;
+    return [
+        pageParsedDom,
+        totalDomElementParsed
+    ];
 
     function iterateDomElements(node, parent, id, parentId, _nthChild) {
         // console.log(parent + " --> " + node.tagName);
+        ++totalDomElementParsed;
         node["visited"] = true;
         let name = node["tagName"].toLowerCase();
         const domElement = {};
@@ -161,8 +166,20 @@ const parseHTMLAndKeepRelations = () => {
     
 }
 
-const main = async() => {
+const parseWebPage = async (page, url, filename) => {
+    await page.goto(url);
+    const type = filename.toLowerCase().includes("baseline") ? "BASELINE" : "CANDIDATE";
 
+    console.log(`\n\n********  PARSING DOM ${type} ********`);
+    const result = await page.evaluate(parseHTMLAndKeepRelations);
+    // console.log(`element: ${JSON.stringify(result, null, 2)}`);
+    console.log(`\n\nHURRAYYY !!!...COMPLETED PARSING ${type}`);
+    fs.writeFileSync(filename, JSON.stringify(result[0], null, 2), "utf-8");
+    return result[0];
+}
+
+const main = async() => {
+    console.log("********   STARTING DOM DIFFING   ********");
     const baseLineURL = "https://victorious-pond-0e5552910.1.azurestaticapps.net/";
     const candidateURL = " https://ambitious-smoke-0a8712010.1.azurestaticapps.net/";
 
@@ -190,16 +207,6 @@ const main = async() => {
 
     page.close();    
 }
-
-const parseWebPage = async (page, url, filename) => {
-    await page.goto(url);
-    const parsedDom = await page.evaluate(parseHTMLAndKeepRelations);
-    // console.log(`element: ${JSON.stringify(result, null, 2)}`);
-    console.log("COMPLETED: parsedDom to file");
-    fs.writeFileSync(filename, JSON.stringify(parsedDom, null, 2), "utf-8");
-    return parsedDom;
-}
-
 
 await main();
 // console.log("done");
