@@ -198,6 +198,7 @@ const main = async() => {
     candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"][1]["div"]["cssProps"]["align-items"] = "wide";
     candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"].pop();
     // candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"].pop();
+    
     const result = compareDoms(baseLineParsedDom, candidateParsedDom);
     fs.writeFileSync("result.json", JSON.stringify(result, null, 2), "utf-8");
 
