@@ -3,80 +3,8 @@ import * as fs from "fs";
 import compareDoms from "./domDiffingEngine.js";
 
 /**
- *  _parseHTMLAndKeepRelations_TBR will be removed in future. We have changed the logic of parsing DOM.
  *  parseHTMLAndKeepRelations (Without underscore) contains the logic of parsing DOM.
  */
-const _parseHTMLAndKeepRelations_TBR = () => {
-    let nodes = [];
-    const allPageElements = document.querySelectorAll("*");
-    
-    for(let i=0; i<allPageElements.length; i++){
-        let element = allPageElements[i];
-        element["visited"] = false;
-        element["visitedChild"] = false;
-        element["userId"] = parseInt(i);
-        element["parentId"] = -1;
-        element["selector"] = element.tagName.toLowerCase();
-        element["missing"] = true;
-        element["cssMatched"] = false;
-    }
-
-    for(let j=0; j<allPageElements.length; j++){
-        let element = allPageElements[j];
-        if(element.tagName.toLowerCase() === "html"){
-            element["missing"] = false;
-        }
-        if(!element["visited"]){
-            let node = {};
-            element["visited"] = true;
-            node["tag"] = element.tagName;
-            node["userId"] = parseInt(element["userId"]);
-            node["parentId"] = parseInt(element["parentId"]);
-            node["missing"] = element["missing"];
-            node["selector"] = element.tagName.toLowerCase() === "html" ? "html" : element["selector"] + " " + element.tagName.toLowerCase();
-            element["selector"] = node["selector"];
-
-            if(element.hasAttributes()){
-                const attributes = element.attributes;
-                const attrsValue = {};
-    
-                node["attributes"] = attrsValue;
-    
-                for(let i=0; i<attributes.length; i++){
-                    if(attributes[i].name !== "userId"){
-                        attrsValue[attributes[i].name] = attributes[i].value;
-                    }
-                }    
-            }
-
-            const appliedCSS = window.getComputedStyle(element);
-            const style = {};
-            node["css"] = style;
-
-            for(let i=0; i<appliedCSS.length; i++){
-                var propName = appliedCSS.item(i);
-
-                style[propName] = appliedCSS.getPropertyValue(propName);
-            }
-
-            element["visited"] = true;
-            nodes[j] = node;
-        }
-
-        if(!element["visitedChild"]){
-            for(let k=0; k<element.childNodes.length; k++){
-                let child = element.childNodes[k];
-                child["parentId"] = element["userId"];
-                child["selector"] = element["selector"];
-                // console.log(`setting parent id: ${child}`);
-            }
-            element["visitedChild"] = true;
-        }
-    }
-
-    return nodes;
-}
-
 const parseHTMLAndKeepRelations = () => {
     // console.log("test");
     const pageElements = document.querySelectorAll("*");
