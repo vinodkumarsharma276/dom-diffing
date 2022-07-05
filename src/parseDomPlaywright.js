@@ -1,6 +1,6 @@
 import playwright from "playwright";
 import * as fs from "fs";
-import compareDoms from "./domDiffingEngine.js";
+import compareDomsNew from "./domDiffingEngineNew.js";
 
 /**
  *  parseHTMLAndKeepRelations (Without underscore) contains the logic of parsing DOM.
@@ -30,6 +30,7 @@ const parseHTMLAndKeepRelations = () => {
         const domElement = {};
 
         domElement[name] ={
+            "uniqueId": "",
             "nthChild": _nthChild,
             "cssComparisonResult": {},
             "attributes": {},
@@ -62,6 +63,17 @@ const parseHTMLAndKeepRelations = () => {
         domElement[name]["missing"] = true;
         domElement[name]["userId"] = id;
         domElement[name]["parentId"] = parentId;
+        domElement[name]["uniqueId"] = name + "*" + cleanAttributes(domElement[name]["attributes"]);
+    }
+
+    function cleanAttributes(attr) {
+        let uniqueStr = "";
+        Object.entries(attr).forEach((entry) => {
+            const [key, value] = entry;
+            console.log(`${key}: ${value}`);
+            uniqueStr += `${key}:${value}*`
+        });
+        return uniqueStr;
     }
 
     function findAppliedCSSOnElement(node){
@@ -83,7 +95,7 @@ const parseHTMLAndKeepRelations = () => {
         if(node.hasAttributes()){
             const attributes = node.attributes;
             for(let i=0; i<attributes.length; i++){
-                if(attributes[i].name !== "userId"){
+                if(attributes[i].name !== "userId" && attributes[i].name != "class"){
                     attrsValue[attributes[i].name] = attributes[i].value;
                 }
             }    
@@ -127,7 +139,7 @@ const main = async() => {
     candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"].pop();
     // candidateParsedDom["html"]["childNodes"][1]["body"]["childNodes"].pop();
     
-    const result = compareDoms(baseLineParsedDom, candidateParsedDom);
+    const result = compareDomsNew(baseLineParsedDom, candidateParsedDom);
     fs.writeFileSync("result.json", JSON.stringify(result, null, 2), "utf-8");
 
     page.on("close", () => {
