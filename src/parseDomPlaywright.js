@@ -60,7 +60,7 @@ const parseHTMLAndKeepRelations = () => {
     function setParsedDomKeys(node, domElement, name, id, parentId){
         domElement[name]["attributes"] = findElementAttributes(node);
         domElement[name]["cssProps"] = findAppliedCSSOnElement(node);
-        domElement[name]["missing"] = true;
+        domElement[name]["found"] = false;
         domElement[name]["userId"] = id;
         domElement[name]["parentId"] = parentId;
         domElement[name]["uniqueId"] = name + "*" + cleanAttributes(domElement[name]["attributes"]);
@@ -102,8 +102,7 @@ const parseHTMLAndKeepRelations = () => {
         }
 
         return attrsValue;
-    }
-    
+    }    
 }
 
 const parseWebPage = async (page, url, filename) => {
