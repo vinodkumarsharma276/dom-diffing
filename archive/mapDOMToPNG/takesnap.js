@@ -199,7 +199,7 @@ const main = async () => {
 
     // const result = await page.evaluate(parseHTMLAndKeepRelations);
 
-    const result = JSON.parse(fs.readFileSync("C://Users//vinodsharma//Documents//workspace//1JS//ooui//packages//visual-regression-tests//dist//result//candidateDom.json", "utf-8"));
+    const result = JSON.parse(fs.readFileSync(`C:/Users/vinodsharma/Documents/workspace/1JS/ooui/packages/visual-regression-tests/dist/result/FileMenu.FileMenu CompoundButtons.default.chromium._baseline.json`, "utf-8"));
 
     Object.keys(result).map((key) => {
         collectCoordinates(result[key]);
