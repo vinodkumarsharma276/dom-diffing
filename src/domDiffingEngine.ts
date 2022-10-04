@@ -1,8 +1,26 @@
-export const compareDoms = (baselineDom, candidateDom) => {
+// const fs = require("fs");
+
+export const runDomDiffing = (baselineDom, candidateDom) => {
+    compareDoms(baselineDom, candidateDom);
+
+    let baselineResult = [];
+    let candidateResult = [];
+
+    prepareResult(baselineDom, baselineResult);
+    prepareResult(candidateDom, candidateResult);
+
+    return {
+        "baseline": baselineResult,
+        "candidate": candidateResult
+    };
+}
+
+const compareDoms = (baselineDom, candidateDom) => {
+    console.log(`Object.keys: ${Object.keys(baselineDom)[0]}`);
     let BTagName = Object.keys(baselineDom)[0];
     let CTageName = Object.keys(candidateDom)[0];
     console.log(`BTagName, CTagname: ${BTagName} ${CTageName}`);
-
+    
     if((baselineDom[BTagName]["uniqueId"] == candidateDom[CTageName]["uniqueId"]) && !candidateDom[CTageName]["found"]){
         baselineDom[BTagName]["found"] = true;
         candidateDom[CTageName]["found"] = true;
@@ -28,6 +46,32 @@ export const compareDoms = (baselineDom, candidateDom) => {
     }
 
     return false;
+}
+
+const prepareResult = (dom, result) => {
+    let tag = Object.keys(dom)[0];
+    const tempResult = {};
+    tempResult[tag] = {
+        "deleted": false,
+        "cssComparisonResult": {},
+        "coordinates": {}
+    };
+    console.log(`tempResult: ${JSON.stringify(tempResult)}`);
+    if(!dom[tag]["found"]){
+        tempResult[tag]["deleted"] = true;
+        tempResult[tag]["coordinates"] = dom[tag]["coordinates"];        
+    }
+
+    if(Object.keys(dom[tag]["cssComparisonResult"]).length !== 0){
+        tempResult[tag]["cssComparisonResult"] = dom[tag]["cssComparisonResult"];
+        tempResult[tag]["coordinates"] = dom[tag]["coordinates"];
+    }
+
+    result.push(tempResult);
+
+    dom[tag]["childNodes"].forEach((childNode) => {
+        prepareResult(childNode, result);
+    });
 }
 
 const compareNodeCSS = (baseLineCSS, candidateCSS) => {
@@ -64,4 +108,9 @@ const compareNodeCSS = (baseLineCSS, candidateCSS) => {
     return cssComparisonResult;
 }
 
-export default compareDoms;
+// const baselineDom = JSON.parse(fs.readFileSync("baselineParsedDom.json"));
+// const candidateDom = JSON.parse(fs.readFileSync("candidateParsedDom.json"));
+// // console.log(`baselineDom: ${baselineDom}`);
+// const result = runDomDiffing(baselineDom, candidateDom);
+
+// console.log(`result: ${JSON.stringify(result, null, 2)}`);

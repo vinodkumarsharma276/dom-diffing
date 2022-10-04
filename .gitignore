@@ -1,6 +1,4 @@
 node_modules/
-baselineParsedDom.json
-candidateParsedDom.json
 pageDom.json
 result.json
 *bak
