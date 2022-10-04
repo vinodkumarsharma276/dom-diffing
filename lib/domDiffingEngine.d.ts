@@ -1,2 +1,4 @@
-export declare const compareDoms: (baselineDom: any, candidateDom: any) => boolean;
-export default compareDoms;
+export declare const runDomDiffing: (baselineDom: any, candidateDom: any) => {
+    baseline: any[];
+    candidate: any[];
+};
